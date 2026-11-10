@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+    function order(orderId) {
+      return firestore.get(/databases/(default)/documents/orders/$(orderId)).data;
+    }
+    match /gigImages/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == uid
+        && (request.resource == null || (request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)')));
+    }
+    match /deliveryFiles/{orderId}/{uid}/{fileName} {
+      allow read: if isAdmin() || (signedIn() && (order(orderId).buyerUid == request.auth.uid || order(orderId).sellerUid == request.auth.uid));
+      allow write: if signedIn() && request.auth.uid == uid && order(orderId).sellerUid == request.auth.uid
+        && request.resource.size < 20 * 1024 * 1024
+        && request.resource.contentType.matches('(image/(jpeg|png|webp)|application/pdf|application/zip)');
+    }
+  }
+}

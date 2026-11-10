@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://YOUR_HOSTING_DOMAIN"],
+    "method": ["GET", "HEAD", "PUT", "POST", "OPTIONS"],
+    "responseHeader": ["Content-Type", "Access-Control-Allow-Origin", "x-goog-resumable"],
+    "maxAgeSeconds": 3600
+  }
+]
